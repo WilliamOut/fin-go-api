@@ -1,0 +1,65 @@
+1. Estrutura de Pastas
+A organização segue o padrão recomendado pela extensão Dev Containers do VS Code. O contexto de build do Docker é a raiz do projeto, permitindo acesso completo ao código Go.
+
+textfin-go-api/                # Raiz do Projeto
+├── .devcontainer/         # Configurações do ambiente isolado
+│   ├── .env               # Variáveis de ambiente (ex: DB_USER, DB_PASS, etc.)
+│   ├── compose.yml        # Orquestração Docker Compose (App + Banco de Dados)
+│   ├── devcontainer.json  # Configurações principais do VS Code (extensões, workspace, etc.)
+│   └── Dockerfile         # Imagem base com Go 1.24
+├── go.mod                 # Gerenciador de dependências Go
+├── main.go                # Código principal da aplicação
+└── ...                    # Outros arquivos do projeto (ex: pkg, cmd, etc.)
+
+
+2. Por que o erro "Workspace does not exist" ocorreu?
+Esse erro é comum em configurações com Docker Compose quando há um descasamento entre o mount de volumes e o caminho esperado pelo VS Code.
+
+O que acontecia antes: O Docker montava o código diretamente em um caminho genérico dentro do container (ex: /workspaces), mas o VS Code esperava abrir especificamente a subpasta /workspaces/fin-go-api.
+Resultado: A subpasta não existia, pois o código ficava "solto" um nível acima.
+
+Correção aplicada: No compose.yml, ajustamos o volume para mapear explicitamente a pasta local para o caminho correto:
+
+YAML
+
+volumes:
+  - ..:/workspaces/fin-go-api
+Isso garante que o código fique exatamente em /workspaces/fin-go-api, alinhando com a configuração padrão do devcontainer.json (que usa workspaceFolder: "/workspaces/${localWorkspaceFolderBasename}").
+
+3. Comandos de Limpeza (Reset Total)
+Se o VS Code persistir com o erro "workspace not found" ou se as alterações no compose.yml não forem aplicadas, execute esses comandos no terminal local (fora do VS Code, na pasta raiz do projeto).
+Passo A: Parar e remover containers antigos
+Bashdocker compose -f .devcontainer/compose.yml down --remove-orphans
+Passo B: Reconstruir imagem sem cache (opcional, mas recomendado para limpeza total)
+Bashdocker compose -f .devcontainer/compose.yml build --no-cache
+Passo C: Limpar volume do PostgreSQL (CUIDADO!)
+Atenção: Isso apaga todos os dados do banco de dados. Use apenas se quiser começar do zero.
+Bashdocker volume rm fin-go-api_postgres-data
+
+
+4. Como Reabrir o Projeto Corretamente
+Após a limpeza:
+
+Abra o VS Code na pasta raiz do projeto (fin-go-api).
+Pressione Ctrl + Shift + P (ou Cmd + Shift + P no Mac).
+Digite e selecione: Dev Containers: Rebuild and Reopen in Container.
+
+Isso força o VS Code a aplicar as novas configurações de volume e criar o workspace corretamente.
+
+
+5. Verificação de Saúde
+Dentro do container (abra o terminal integrado do VS Code):
+
+pwd
+Deve retornar: /workspaces/fin-go-api
+ls
+Deve listar arquivos como go.mod, main.go, etc.
+env | grep POSTGRES
+Deve mostrar as variáveis de ambiente definidas no .env (ex: POSTGRES_USER, POSTGRES_PASSWORD, etc.).
+
+Se tudo estiver correto, você está pronto para desenvolver!
+Dicas Adicionais
+
+Extensões recomendadas: O devcontainer.json já instala automaticamente extensões úteis para Go (ex: Go extension, gopls).
+Variáveis de ambiente: Edite .devcontainer/.env para alterar credenciais do banco ou outras configs.
+Problemas persistentes? Tente Dev Containers: Rebuild Without Cache no Command Palette.

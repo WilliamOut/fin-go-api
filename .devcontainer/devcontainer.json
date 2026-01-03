@@ -1,0 +1,19 @@
+{
+	"name": "Go & PostgreSQL",
+	"dockerComposeFile": "compose.yml",
+	"service": "app",
+	"workspaceFolder": "/workspaces/fin-go-api",
+    "forwardPorts": [8080,5432],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+				"golang.Go"
+			]
+        }
+	},
+	"features": {
+		"ghcr.io/devcontainers/features/common-utils:2": {},
+		"ghcr.io/stuartleeks/dev-container-features/shell-history:0": {},
+		"ghcr.io/devcontainers-extra/features/zsh-plugins:0": {}
+	}
+}
