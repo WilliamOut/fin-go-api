@@ -1,0 +1,7 @@
+go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+go install github.com/air-verse/air@v1.61.3
+go get github.com/spf13/viper
+go get -u github.com/gin-gonic/gin
+
+// migrate
+go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
