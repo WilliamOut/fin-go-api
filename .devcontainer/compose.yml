@@ -1,26 +1,56 @@
+version: '3.8'
+
 services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      - POSTGRES_USER=${POSTGRES_USER:-postgres}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
-      - POSTGRES_DB=${POSTGRES_DB:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./post-create.sh:/workspaces/fin-go-api/post-create.sh
     ports:
       - "5432:5432"
+    networks:
+      - finapp-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   app:
     build:
       context: ..
       dockerfile: .devcontainer/Dockerfile
-    env_file:
-      - .env
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=${POSTGRES_USER:-postgres}
+      - DB_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - DB_NAME=${POSTGRES_DB:-postgres}
+      - JWT_SECRET=${JWT_SECRET:-your-secret-key-change-in-production}
     volumes:
       - ..:/workspaces/fin-go-api:cached
-    command: sleep infinity
-    network_mode: service:db
+      - go-mod-cache:/go/pkg/mod
+    ports:
+      - "8080:8080"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    networks:
+      - finapp-network
+    command: sleep infinity
+    tty: true
+    stdin_open: true
+
+networks:
+  finapp-network:
+    driver: bridge
+
 volumes:
   postgres-data:
+  go-mod-cache:

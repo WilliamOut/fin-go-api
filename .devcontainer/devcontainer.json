@@ -1,19 +1,37 @@
 {
-	"name": "Go & PostgreSQL",
-	"dockerComposeFile": "compose.yml",
-	"service": "app",
-	"workspaceFolder": "/workspaces/fin-go-api",
-    "forwardPorts": [8080,5432],
-    "customizations": {
-        "vscode": {
-            "extensions": [
-				"golang.Go"
-			]
+  "name": "Go & PostgreSQL",
+  "dockerComposeFile": "compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/fin-go-api",
+  "forwardPorts": [8080, 5432],
+  "postCreateCommand": "go mod init fin-go-api && go mod tidy",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.Go",
+        "github.copilot",
+        "github.copilot-chat",
+        "ms-azuretools.vscode-docker",
+        "cweijan.vscode-postgresql-client2"
+      ],
+      "settings": {
+        "go.toolsManagement.autoUpdate": true,
+        "go.useLanguageServer": true,
+        "go.gopath": "/go",
+        "go.goroot": "/usr/local/go",
+        "editor.formatOnSave": true,
+        "[go]": {
+          "editor.defaultFormatter": "golang.go"
         }
-	},
-	"features": {
-		"ghcr.io/devcontainers/features/common-utils:2": {},
-		"ghcr.io/stuartleeks/dev-container-features/shell-history:0": {},
-		"ghcr.io/devcontainers-extra/features/zsh-plugins:0": {}
-	}
+      }
+    }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {},
+    "ghcr.io/devcontainers/features/go:1": {
+      "version": "1.24"
+    },
+	"ghcr.io/stuartleeks/dev-container-features/shell-history:0": {},
+	"ghcr.io/devcontainers-extra/features/zsh-plugins:0": {}
+  }
 }
